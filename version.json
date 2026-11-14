@@ -1,6 +1,6 @@
 {
-  "versionCode": 2,
-  "versionName": "1.0.1",
+  "versionCode": 3,
+  "versionName": "1.0.3",
   "url": "https://github.com/justsean-nothingelse/MVK-App/raw/apk/MVK.apk",
-  "notes": "Icon intro on open, Terms & Conditions, working Check for Updates, randomizer sound effects (toggle in Settings), and social links in About."
+  "notes": "Fixed: randomizer sound effects now play (they follow your media volume and work on vibrate)."
 }
