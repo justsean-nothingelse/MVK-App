@@ -20,6 +20,11 @@ If Android Studio offers to upgrade Gradle / AGP / libraries, it's safe to accep
 
 Requires Android 8.0 (API 26) or newer.
 
+## Signing key (important)
+Every release is signed with the same key: `keystore/mvk-release.p12`. The file is encrypted, so it's safe in a public repo. Its password is stored only in the GitHub secret `MVK_KEYSTORE_PASSWORD`, and the build refuses to run without it. Android only installs an update over the existing app when the signature matches, so never delete or replace this keystore, and keep a copy of the password somewhere safe.
+
+App ID: `com.seanpereyra.mayvoucherka` (the very first test build used `com.seanpereyra.mvk` with a throwaway key). If you need to move vouchers from that first build, use **Library → Import from screenshots**.
+
 ## Setting up "Check for updates"
 1. Push this project to a GitHub repo.
 2. In `app/src/main/java/com/seanpereyra/mvk/data/UpdateChecker.kt`, set `UPDATE_URL` to

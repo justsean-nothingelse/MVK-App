@@ -1,5 +1,9 @@
 package com.seanpereyra.mvk.ui.screens
 
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -25,6 +29,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.AddPhotoAlternate
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.DeleteOutline
@@ -74,6 +79,11 @@ fun LibraryScreen(store: MvkStore, vouchers: List<Voucher>, onScan: () -> Unit, 
     var selectedId by rememberSaveable { mutableStateOf<String?>(null) }
     var editing by remember { mutableStateOf<Voucher?>(null) }
     var confirmClear by remember { mutableStateOf(false) }
+    var importUris by remember { mutableStateOf<List<Uri>>(emptyList()) }
+    val pickScreenshots = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris ->
+        if (uris.isNotEmpty()) importUris = uris
+    }
+    val openImport = { pickScreenshots.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
 
     val available = vouchers.filterNot { it.used }
     val used = vouchers.filter { it.used }
@@ -101,6 +111,15 @@ fun LibraryScreen(store: MvkStore, vouchers: List<Voucher>, onScan: () -> Unit, 
                         Modifier
                             .size(44.dp)
                             .clip(CircleShape)
+                            .background(c.surface)
+                            .clickable(onClick = openImport),
+                        contentAlignment = Alignment.Center,
+                    ) { Icon(Icons.Rounded.AddPhotoAlternate, "Import from screenshots", tint = c.text) }
+                    Spacer(Modifier.width(8.dp))
+                    Box(
+                        Modifier
+                            .size(44.dp)
+                            .clip(CircleShape)
                             .background(c.accent)
                             .clickable { editing = Voucher(code = "") },
                         contentAlignment = Alignment.Center,
@@ -120,6 +139,7 @@ fun LibraryScreen(store: MvkStore, vouchers: List<Voucher>, onScan: () -> Unit, 
                     if (showUsed) "Nothing used yet" else "No vouchers yet",
                     if (showUsed) "Vouchers you mark as used will show up here." else "Scan a voucher slip and it lands here, ready when you need Wi-Fi.",
                     action = if (showUsed) null else ("Scan a voucher" to onScan),
+                    secondary = if (showUsed) null else ("Import from screenshots" to openImport),
                 )
             }
         } else {
@@ -156,6 +176,15 @@ fun LibraryScreen(store: MvkStore, vouchers: List<Voucher>, onScan: () -> Unit, 
                 editing = null
             },
             onDismiss = { editing = null },
+        )
+    }
+
+    if (importUris.isNotEmpty()) {
+        ImportScreenshotsSheet(
+            uris = importUris,
+            store = store,
+            existingCodes = vouchers.map { it.code }.toSet(),
+            onClose = { importUris = emptyList() },
         )
     }
 
@@ -199,7 +228,12 @@ private fun Segmented(left: String, right: String, rightSelected: Boolean, onCha
 }
 
 @Composable
-private fun EmptyState(title: String, body: String, action: Pair<String, () -> Unit>?) {
+private fun EmptyState(
+    title: String,
+    body: String,
+    action: Pair<String, () -> Unit>?,
+    secondary: Pair<String, () -> Unit>? = null,
+) {
     val c = Mvk.colors
     Column(
         Modifier
@@ -221,6 +255,11 @@ private fun EmptyState(title: String, body: String, action: Pair<String, () -> U
                 shape = RoundedCornerShape(14.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = c.accent, contentColor = c.onAccent),
             ) { Text(action.first, style = MvkType.bodyMedium) }
+        }
+        if (secondary != null) {
+            TextButton(onClick = secondary.second) {
+                Text(secondary.first, style = MvkType.bodyMedium.copy(fontSize = 14.sp), color = c.text)
+            }
         }
     }
 }

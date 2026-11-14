@@ -9,11 +9,29 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.seanpereyra.mvk"
+        // New ID (was com.seanpereyra.mvk) so this installs next to the first build,
+        // which was signed with a throwaway key. Keep this ID from now on.
+        applicationId = "com.seanpereyra.mayvoucherka"
         minSdk = 26
         targetSdk = 35
         versionCode = 2
         versionName = "1.0.1"
+    }
+
+    // Permanent release key. The keystore file is encrypted; its password lives only in the
+    // MVK_KEYSTORE_PASSWORD GitHub secret. Every release must be signed with this same key,
+    // otherwise Android refuses to install the update over the existing app.
+    val keystorePassword: String? = System.getenv("MVK_KEYSTORE_PASSWORD")
+    signingConfigs {
+        create("release") {
+            if (keystorePassword != null) {
+                storeFile = rootProject.file("keystore/mvk-release.p12")
+                storePassword = keystorePassword
+                keyAlias = "mvk"
+                keyPassword = keystorePassword
+                storeType = "PKCS12"
+            }
+        }
     }
 
     buildTypes {
@@ -21,9 +39,8 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Signs release with the debug key so you can install it right away.
-            // Replace with your own keystore before publishing anywhere.
-            signingConfig = signingConfigs.getByName("debug")
+            // Without the password (e.g. a local Android Studio build) fall back to the debug key.
+            signingConfig = signingConfigs.getByName(if (keystorePassword != null) "release" else "debug")
         }
     }
     compileOptions {

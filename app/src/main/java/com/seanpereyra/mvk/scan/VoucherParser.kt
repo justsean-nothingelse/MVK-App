@@ -22,7 +22,7 @@ object VoucherParser {
 
     private val headerRx = Regex("""([A-Za-z]{3,})\s*\[?\s*(\d{1,5})\s*]""")
     private val slotRx = Regex("""\[\s*(\d{1,5})\s*]""")
-    private val durationRx = Regex("""\b(\d{1,3}\s*[dh](\s*\d{1,2}\s*m)?(\s*\d{1,2}\s*s)?|\d{1,3}\s*m(\s*\d{1,2}\s*s)?|\d{1,3}\s*s)\b""", RegexOption.IGNORE_CASE)
+    internal val durationRx = Regex("""\b(\d{1,3}\s*[dh](\s*\d{1,2}\s*m)?(\s*\d{1,2}\s*s)?|\d{1,3}\s*m(\s*\d{1,2}\s*s)?|\d{1,3}\s*s)\b""", RegexOption.IGNORE_CASE)
     private val codeRx = Regex("""^[A-Za-z0-9]{$CODE_LENGTH}$""")
     private val stopWords = setOf("VOUCH", "CODE", "VOUCHER", "WIFI", "HOURS", "VALID")
 

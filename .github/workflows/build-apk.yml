@@ -22,13 +22,23 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Build APK
+        env:
+          MVK_KEYSTORE_PASSWORD: ${{ secrets.MVK_KEYSTORE_PASSWORD }}
         run: |
+          if [ -z "$MVK_KEYSTORE_PASSWORD" ]; then
+            echo "::error::The MVK_KEYSTORE_PASSWORD secret is missing. Without it the APK would be signed with a throwaway key and could not update the installed app."
+            exit 1
+          fi
           echo "sdk.dir=$ANDROID_HOME" > local.properties
           chmod +x gradlew
           ./gradlew assembleRelease --stacktrace
 
-      - name: Rename APK
-        run: cp app/build/outputs/apk/release/app-release.apk MVK.apk
+      - name: Rename APK and record its signature
+        run: |
+          cp app/build/outputs/apk/release/app-release.apk MVK.apk
+          APKSIGNER=$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner
+          "$APKSIGNER" verify --print-certs MVK.apk | tee signer.txt
+          grep -qi "FE:5E:F0:4A\|fe5ef04a" signer.txt || { echo "::error::APK is not signed with the MVK release key"; exit 1; }
 
       - uses: actions/upload-artifact@v4
         with:
@@ -37,10 +47,10 @@ jobs:
 
       - name: Publish APK to the "apk" branch
         run: |
-          mkdir out && cp MVK.apk out/ && cd out
+          mkdir out && cp MVK.apk signer.txt out/ && cd out
           git init -q -b apk
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add MVK.apk
+          git add MVK.apk signer.txt
           git commit -qm "MVK.apk from ${GITHUB_SHA::7}"
           git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" apk
