@@ -61,6 +61,7 @@ import com.seanpereyra.mvk.data.ThemeMode
 import com.seanpereyra.mvk.data.UpdateChecker
 import com.seanpereyra.mvk.ui.components.MvkLogo
 import com.seanpereyra.mvk.ui.components.SectionLabel
+import com.seanpereyra.mvk.ui.components.UpdateFlowDialog
 import com.seanpereyra.mvk.ui.theme.Mvk
 import com.seanpereyra.mvk.ui.theme.MvkType
 import kotlinx.coroutines.launch
@@ -72,6 +73,7 @@ fun SettingsScreen(store: MvkStore, settings: AppSettings, onShowTerms: () -> Un
     val scope = rememberCoroutineScope()
     var checking by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<UpdateChecker.Result?>(null) }
+    var updating by remember { mutableStateOf<UpdateChecker.Result.Available?>(null) }
 
     Column(
         Modifier
@@ -244,9 +246,9 @@ fun SettingsScreen(store: MvkStore, settings: AppSettings, onShowTerms: () -> Un
             confirmButton = {
                 if (r is UpdateChecker.Result.Available && r.url.isNotBlank()) {
                     TextButton(onClick = {
-                        runCatching { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(r.url))) }
+                        updating = r
                         result = null
-                    }) { Text("Download", color = c.text) }
+                    }) { Text("Update now", color = c.text) }
                 } else {
                     TextButton(onClick = { result = null }) { Text("OK", color = c.text) }
                 }
@@ -255,6 +257,10 @@ fun SettingsScreen(store: MvkStore, settings: AppSettings, onShowTerms: () -> Un
                 { TextButton(onClick = { result = null }) { Text("Later", color = c.textDim) } }
             } else null,
         )
+    }
+
+    updating?.let { u ->
+        UpdateFlowDialog(versionName = u.versionName, url = u.url, onClose = { updating = null })
     }
 }
 
