@@ -1,6 +1,6 @@
 {
-  "versionCode": 3,
-  "versionName": "1.0.3",
-  "url": "https://github.com/justsean-nothingelse/MVK-App/raw/apk/MVK.apk",
-  "notes": "Fixed: randomizer sound effects now play (they follow your media volume and work on vibrate)."
+  "versionCode": 4,
+  "versionName": "1.0.4",
+  "url": "https://raw.githubusercontent.com/justsean-nothingelse/MVK-App/apk/MVK.apk",
+  "notes": "Updates now download and install right inside MVK, with a progress bar. No browser needed."
 }
