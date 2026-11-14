@@ -14,7 +14,7 @@ import java.net.URL
  */
 object UpdateChecker {
     const val UPDATE_URL =
-        "https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/MVK/main/version.json"
+        "https://raw.githubusercontent.com/justsean-nothingelse/MVK-App/main/version.json"
 
     sealed interface Result {
         data class UpToDate(val current: String) : Result

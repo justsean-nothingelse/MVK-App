@@ -23,6 +23,7 @@ enum class Accent(val label: String, val argb: Long) {
 data class AppSettings(
     val theme: ThemeMode = ThemeMode.DARK,
     val accent: Accent = Accent.MONO,
+    val sfx: Boolean = true,
 )
 
 /** Everything is stored on the phone only. No accounts, no cloud. */
@@ -34,6 +35,14 @@ class MvkStore(context: Context) {
 
     private val _settings = MutableStateFlow(loadSettings())
     val settings: StateFlow<AppSettings> = _settings.asStateFlow()
+
+    private val _termsAccepted = MutableStateFlow(prefs.getBoolean("termsAccepted", false))
+    val termsAccepted: StateFlow<Boolean> = _termsAccepted.asStateFlow()
+
+    fun acceptTerms() {
+        _termsAccepted.value = true
+        prefs.edit().putBoolean("termsAccepted", true).apply()
+    }
 
     // ---- vouchers ----
     /** @return false if that code is already in the library */
@@ -72,16 +81,19 @@ class MvkStore(context: Context) {
     // ---- settings ----
     fun setTheme(t: ThemeMode) { _settings.update { it.copy(theme = t) }; saveSettings() }
     fun setAccent(a: Accent) { _settings.update { it.copy(accent = a) }; saveSettings() }
+    fun setSfx(on: Boolean) { _settings.update { it.copy(sfx = on) }; saveSettings() }
 
     private fun loadSettings() = AppSettings(
         theme = runCatching { ThemeMode.valueOf(prefs.getString("theme", "DARK")!!) }.getOrDefault(ThemeMode.DARK),
         accent = runCatching { Accent.valueOf(prefs.getString("accent", "MONO")!!) }.getOrDefault(Accent.MONO),
+        sfx = prefs.getBoolean("sfx", true),
     )
 
     private fun saveSettings() {
         prefs.edit()
             .putString("theme", _settings.value.theme.name)
             .putString("accent", _settings.value.accent.name)
+            .putBoolean("sfx", _settings.value.sfx)
             .apply()
     }
 }

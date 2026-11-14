@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.seanpereyra.mvk.data.MvkStore
+import com.seanpereyra.mvk.data.Sfx
 import com.seanpereyra.mvk.data.Voucher
 import com.seanpereyra.mvk.scan.VoucherParser
 import com.seanpereyra.mvk.ui.components.SectionLabel
@@ -63,11 +64,13 @@ private val rng = SecureRandom()
 fun randomCode(len: Int = VoucherParser.CODE_LENGTH) = buildString { repeat(len) { append(POOL[rng.nextInt(POOL.length)]) } }
 
 @Composable
-fun RandomizerScreen(store: MvkStore, contentPadding: PaddingValues) {
+fun RandomizerScreen(store: MvkStore, sfxEnabled: Boolean, contentPadding: PaddingValues) {
     val c = Mvk.colors
     val ctx = LocalContext.current
     val haptics = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
+    val sfx = remember { Sfx(scope) }
+    sfx.enabled = sfxEnabled
 
     var code by rememberSaveable { mutableStateOf(randomCode()) }
     var rolling by remember { mutableStateOf(false) }
@@ -79,15 +82,18 @@ fun RandomizerScreen(store: MvkStore, contentPadding: PaddingValues) {
         scope.launch {
             rolling = true
             val final = randomCode()
+            var lockedSoFar = 0
             // Slot-machine effect: characters lock in left to right
             for (frame in 0 until 14) {
                 val locked = (frame - 4).coerceAtLeast(0) / 2
                 code = final.take(locked) + randomCode(final.length - locked)
+                if (locked > lockedSoFar) { sfx.tick(); lockedSoFar = locked } else sfx.blip()
                 delay(38)
             }
             code = final
             tries++
             haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+            sfx.win()
             pop.snapTo(1.08f)
             pop.animateTo(1f, spring(dampingRatio = Spring.DampingRatioMediumBouncy))
             rolling = false

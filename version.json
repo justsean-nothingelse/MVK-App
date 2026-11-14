@@ -1,6 +1,6 @@
 {
-  "versionCode": 1,
-  "versionName": "1.0.0",
-  "url": "https://github.com/YOUR_GITHUB_USERNAME/MVK/releases/latest",
-  "notes": "First release of MVK."
+  "versionCode": 2,
+  "versionName": "1.0.1",
+  "url": "https://github.com/justsean-nothingelse/MVK-App/raw/apk/MVK.apk",
+  "notes": "Icon intro on open, Terms & Conditions, working Check for Updates, randomizer sound effects (toggle in Settings), and social links in About."
 }

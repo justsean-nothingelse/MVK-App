@@ -23,11 +23,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.rounded.OpenInNew
+import androidx.compose.material.icons.rounded.AlternateEmail
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.MailOutline
+import androidx.compose.material.icons.rounded.PhotoCamera
 import androidx.compose.material.icons.rounded.SystemUpdate
+import androidx.compose.material.icons.rounded.VolumeUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -40,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -57,7 +66,7 @@ import com.seanpereyra.mvk.ui.theme.MvkType
 import kotlinx.coroutines.launch
 
 @Composable
-fun SettingsScreen(store: MvkStore, settings: AppSettings, contentPadding: PaddingValues) {
+fun SettingsScreen(store: MvkStore, settings: AppSettings, onShowTerms: () -> Unit, contentPadding: PaddingValues) {
     val c = Mvk.colors
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -138,6 +147,36 @@ fun SettingsScreen(store: MvkStore, settings: AppSettings, contentPadding: Paddi
             else Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = c.textDim)
         }
 
+        // Sound effects toggle
+        Spacer(Modifier.height(10.dp))
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(18.dp))
+                .background(c.surface)
+                .clickable { store.setSfx(!settings.sfx) }
+                .padding(18.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(Icons.Rounded.VolumeUp, null, tint = c.text)
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                Text("Sound effects", style = MvkType.bodyMedium, color = c.text)
+                Text("Plays while the randomizer spins", style = MvkType.small, color = c.textDim)
+            }
+            Switch(
+                checked = settings.sfx,
+                onCheckedChange = { store.setSfx(it) },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = c.onAccent,
+                    checkedTrackColor = c.accent,
+                    uncheckedThumbColor = c.textDim,
+                    uncheckedTrackColor = c.surface,
+                    uncheckedBorderColor = c.line,
+                ),
+            )
+        }
+
         // ---------- About ----------
         Spacer(Modifier.height(28.dp))
         SectionLabel("About")
@@ -160,7 +199,23 @@ fun SettingsScreen(store: MvkStore, settings: AppSettings, contentPadding: Paddi
             Text("CREATED BY", style = MvkType.section, color = c.textDim)
             Spacer(Modifier.height(2.dp))
             Text("Sean Pereyra", style = MvkType.title.copy(fontSize = 28.sp), color = c.text)
-            Spacer(Modifier.height(14.dp))
+
+            Spacer(Modifier.height(18.dp))
+            SocialRow(Icons.Rounded.PhotoCamera, "Instagram", "@justseani1") {
+                ctx.openUrl("https://instagram.com/justseani1")
+            }
+            Spacer(Modifier.height(8.dp))
+            SocialRow(Icons.Rounded.AlternateEmail, "X (Twitter)", "@JustSEANI") {
+                ctx.openUrl("https://x.com/JustSEANI")
+            }
+            Spacer(Modifier.height(8.dp))
+            SocialRow(Icons.Rounded.MailOutline, "Email", "contactjustseani@gmail.com") {
+                ctx.openUrl("mailto:contactjustseani@gmail.com")
+            }
+            Spacer(Modifier.height(8.dp))
+            SocialRow(Icons.Rounded.Description, "Terms & Conditions", "Read the full terms", onShowTerms)
+
+            Spacer(Modifier.height(16.dp))
             Text("Version ${BuildConfig.VERSION_NAME}", style = MvkType.small, color = c.textDim)
         }
     }
@@ -238,4 +293,30 @@ private fun ThemeSwatch(mode: ThemeMode, selected: Boolean, modifier: Modifier, 
             style = MvkType.small, color = if (selected) c.text else c.textDim,
         )
     }
+}
+
+@Composable
+private fun SocialRow(icon: ImageVector, label: String, value: String, onClick: () -> Unit) {
+    val c = Mvk.colors
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .border(1.5.dp, c.line, RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, null, tint = c.text, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(label, style = MvkType.small.copy(fontSize = 11.sp), color = c.textDim)
+            Text(value, style = MvkType.bodyMedium.copy(fontSize = 14.sp), color = c.text)
+        }
+        Icon(Icons.AutoMirrored.Rounded.OpenInNew, null, tint = c.textDim, modifier = Modifier.size(16.dp))
+    }
+}
+
+private fun android.content.Context.openUrl(url: String) {
+    runCatching { startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
 }
