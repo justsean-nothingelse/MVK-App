@@ -162,7 +162,7 @@ fun SettingsScreen(store: MvkStore, settings: AppSettings, onShowTerms: () -> Un
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
                 Text("Sound effects", style = MvkType.bodyMedium, color = c.text)
-                Text("Plays while the randomizer spins", style = MvkType.small, color = c.textDim)
+                Text("Plays while the randomizer spins. Uses media volume.", style = MvkType.small, color = c.textDim)
             }
             Switch(
                 checked = settings.sfx,

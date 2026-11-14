@@ -27,6 +27,7 @@ import androidx.compose.material.icons.rounded.Wifi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,8 +70,9 @@ fun RandomizerScreen(store: MvkStore, sfxEnabled: Boolean, contentPadding: Paddi
     val ctx = LocalContext.current
     val haptics = LocalHapticFeedback.current
     val scope = rememberCoroutineScope()
-    val sfx = remember { Sfx(scope) }
+    val sfx = remember { Sfx(ctx.applicationContext) }
     sfx.enabled = sfxEnabled
+    DisposableEffect(Unit) { onDispose { sfx.release() } }
 
     var code by rememberSaveable { mutableStateOf(randomCode()) }
     var rolling by remember { mutableStateOf(false) }
